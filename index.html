@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis XV Años - Invitación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --color-principal: #A10000;
+            --color-fondo: #EAE2C8;
+            --color-texto: #333333;
+            --color-acento:#820000;
+        }
+
+        /* --- CORRECCIÓN MÓVIL: Evitar scroll horizontal y desbordes --- */
+        * { box-sizing: border-box; }
+        html, body { 
+            overflow-x: hidden; 
+            width: 100%; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--color-fondo); 
+            color: var(--color-texto); 
+            text-align: center; 
+        }
+
+        /* Clase para bloquear el scroll al inicio */
+        .bloquear-scroll { 
+            overflow: hidden !important; 
+            height: 100vh; 
+            touch-action: none; 
+        }
+        
+        /* --- NUEVO: ESTILOS TAPA "CAJA DE REGALO" --- */
+        #pantalla-apertura {
+            position: fixed; top: 0; left: 0; width: 100vw;
+            height: 100vh; height: 100dvh; /* Altura dinámica para celulares */
+            z-index: 99999;
+            overflow: hidden; /* Importante para el efecto de caja */
+            display: block; /* Contenido manejado internamente */
+            background-color: transparent; /* Fondo transparente, los cuadros dan el color */
+        }
+
+       /* 4 Cuadros (Cuadrantes) */
+        .cuadrante {
+            position: absolute; width: 50%; height: 50%;
+            background-color: var(--color-acento); 
+            transition: transform 1.5s ease-in-out; 
+            z-index: 1; 
+            pointer-events: none; /* ESTO PERMITE QUE EL CLIC PASE AL BOTÓN */
+        }
+        /* Posiciones iniciales */
+        .tl { top: 0; left: 0; }
+        .tr { top: 0; right: 0; }
+        .bl { bottom: 0; left: 0; }
+        .br { bottom: 0; right: 0; }
+
+        /* Listones (Cruces) */
+        .liston {
+            position: absolute; background-color: var(--color-principal); 
+            transition: transform 1.5s ease-in-out;
+            z-index: 2; 
+            pointer-events: none; /* ESTO PERMITE QUE EL CLIC PASE AL BOTÓN */
+        }
+        /* Listón Vertical (TL -> BL center) */
+        .v-liston { width: 30px; height: 50%; left: 50%; transform: translateX(-50%); }
+        .v-top { top: 0; }
+        .v-bottom { bottom: 0; }
+
+        /* Listón Horizontal (TL -> TR center) */
+        .h-liston { width: 50%; height: 30px; top: 50%; transform: translateY(-50%); }
+        .h-left { left: 0; }
+        .h-right { right: 0; }
+
+        /* Contenido Central (Texto y Botón) */
+        #apertura-contenido {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 3; /* Topmost */
+            transition: opacity 1s ease-in-out;
+        }
+
+        .btn-abrir {
+            background-color: var(--color-principal); color: white; padding: 15px 40px;
+            font-size: 1.5rem; border: none; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2); animation: latir 1.5s infinite;
+            margin-top: 20px;
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes latir { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        /* CLASES PARA ANIMACIONES DE SCROLL (Aparecer suavemente) */
+        .oculto { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
+        .visible { opacity: 1; transform: translateY(0); }
+
+        /* Estilos Generales */
+        .bloque-seccion { padding: 80px 20px; max-width: 900px; margin: 0 auto; position: relative; background-color: var(--color-fondo); z-index: 2; }
+        h2 { font-family: 'Great Vibes', cursive; font-size: 3.5rem; color: var(--color-principal); margin-bottom: 10px; }
+        .divisor { width: 60px; height: 3px; background-color: var(--color-principal); margin: 20px auto; }
+        .btn { display: inline-block; padding: 12px 25px; text-decoration: none; border-radius: 25px; font-weight: 600; transition: 0.3s; cursor: pointer; border: none; margin-top: 10px; }
+        
+        /* Portada Parallax */
+        .hero { height: 100vh; background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('XV2.jpeg'); background-position: center; background-size: cover; background-attachment: fixed; display: flex; flex-direction: column; justify-content: center; color: white; position: relative; z-index: 1; }
+        
+        /* Cuenta Regresiva */
+        #cuenta-regresiva { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .tiempo-unidad { background: rgba(255, 255, 255, 0.9); color: var(--color-principal); padding: 10px; border-radius: 10px; min-width: 60px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .tiempo-unidad span { display: block; font-size: 1.5rem; font-weight: bold; }
+
+        /* NUEVO: Carrusel Deslizante de Imágenes */
+        .carrusel-contenedor {
+            display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 15px;
+            padding-bottom: 10px; /* Espacio para barra de scroll */
+        }
+        .carrusel-contenedor::-webkit-scrollbar { height: 8px; }
+        .carrusel-contenedor::-webkit-scrollbar-thumb { background: var(--color-principal); border-radius: 10px; }
+        .carrusel-img {
+            flex: 0 0 100%; scroll-snap-align: center; height: 200px; object-fit: cover; border-radius: 15px;
+        }
+
+	/* Galería de Familia */
+        .familia-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .familiar { background: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+       .familiar img { width: 100%; height: 200px; object-fit: cover; object-position: top; border-radius: 10px; }
+        .familiar p { margin: 10px 0 5px; font-weight: 600; color: var(--color-principal); }
+
+        /* Wishlist y Sobres */
+        .regalos-box { background: #fff; padding: 40px; border-radius: 20px; border: 2px dashed var(--color-principal); margin-bottom: 30px; }
+        .btn-amazon { background-color: #A10000; color: white; }
+
+        /* Formulario Buzón */
+        textarea { width: 100%; max-width: 400px; padding: 15px; border-radius: 15px; border: 1px solid #ccc; font-family: inherit; margin-bottom: 15px; resize: vertical; }
+
+        /* Música y Pétalos */
+        .music-btn { position: fixed; bottom: 20px; left: 20px; background: var(--color-principal); color: white; border-radius: 50%; width: 50px; height: 50px; z-index: 1000; border:none; cursor: pointer; }
+        .petalo { position: fixed; top: -20px; background-color: #cc0000; border-radius: 15px 0px 15px 0px; box-shadow: 0 0 5px rgba(0,0,0,0.2); pointer-events: none; z-index: 9999; animation: caer linear forwards; }
+        @keyframes caer { 0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.8; } 100% { transform: translateY(105vh) rotate(360deg) scale(0.8); opacity: 0; } }
+	
+	/* --- NUEVO: ENREDADERAS DE FLORES --- */
+        .enredadera {
+            position: fixed;
+            top: 0;
+            width: 20px; /* Ajusta el grosor de la enredadera aquí */
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none; /* Para que no estorben al dar clic en la página */
+            background-repeat: repeat-y;
+            background-size: 100% auto;
+        }
+        .enredadera-izq {
+            left: 0;
+            background-image: url('Rosas.png'); /* Agrega una foto PNG sin fondo a tu carpeta */
+        }
+        .enredadera-der {
+            right: 0;
+            background-image: url('Rosas.png');
+            transform: scaleX(-1); /* Voltea la imagen para que haga efecto espejo */
+        }
+
+        /* --- NUEVO: RETRASOS PARA EFECTO EMERGENTE EN CASCADA --- */
+        .retraso-1 { transition-delay: 0.2s; }
+        .retraso-2 { transition-delay: 0.4s; }
+        .retraso-3 { transition-delay: 0.6s; }	    
+
+	/* --- BOTONES DE NAVEGACIÓN FLOTANTES --- */
+        #controles-navegacion {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .nav-btn {
+            background-color: var(--color-principal);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .nav-btn:hover {
+            transform: scale(1.05);
+            background-color: #333; /* Cambia a oscuro al pasar el mouse */
+        }
+	/* --- CORRECCIÓN PARA EL ZOOM EN LA PORTADA EN CELULARES --- */
+        @media (max-width: 768px) {
+            .hero {
+                background-attachment: scroll !important;
+            }
+        }
+</style>
+</head>
+<body class="bloquear-scroll">
+	<div class="enredadera enredadera-izq"></div>
+    <div class="enredadera enredadera-der"></div>	
+    <div id="pantalla-apertura">
+        <div class="cuadrante tl"></div>
+        <div class="cuadrante tr"></div>
+        <div class="cuadrante bl"></div>
+        <div class="cuadrante br"></div>
+
+        <div class="liston v-liston v-top"></div>
+        <div class="liston v-liston v-bottom"></div>
+        <div class="liston h-liston h-left"></div>
+        <div class="liston h-liston h-right"></div>
+
+        <div id="apertura-contenido">
+            <h2 style="color: white; text-shadow: 2px 2px 5px rgba(0,0,0,0.3);">¡Tienes una invitación!</h2>
+            <p style="color: white; margin-bottom: 30px;">De: Tania Jazmín Cuate De Jesús</p>
+            <button class="btn-abrir" onclick="abrirInvitacion()">Abrir Invitación</button>
+        </div>
+    </div>
+
+    <audio id="musica-fondo" loop><source src="Song2.mp3#t=29" type="audio/mpeg"></audio>
+    <button class="music-btn" id="btn-play" onclick="togglePlay()">🎵</button>
+	<div id="controles-navegacion">
+        <button onclick="irArriba()" class="nav-btn">⬆️ Inicio</button>
+        <button onclick="irSiguiente()" class="nav-btn">Siguiente ⬇️</button>
+    </div>
+    <header class="hero">
+        <div class="oculto animar">
+            <p style="font-size: 1.5em;">Mis XV Años</p>
+            <h1 style="font-family: 'Great Vibes'; font-size: 5rem; margin:0;">Tania Jazmín</h1>
+<br>
+	<h2 style = "font-family: 'Great Vibes'; color : white; font-size: 1.5rem; margin:0;" > 20 / Junio / 2026 </h2>
+	<p> 3:00 PM </p>
+	<!--<h2 style = "font-family: 'Great Vibes'; color : white; font-size: 1.5rem; margin:0;" > 3:00 pm </h2> -->
+            <div id="cuenta-regresiva">
+                <div class="tiempo-unidad"><span id="dias">00</span>Días</div>
+                <div class="tiempo-unidad"><span id="horas">00</span>Hrs</div>
+                <div class="tiempo-unidad"><span id="minutos">00</span>Min</div>
+                <div class="tiempo-unidad"><span id="segundos">00</span>Seg</div>
+            </div>
+        </div>
+    </header>
+	 <section class="bloque-seccion"> 
+        <h2 class="oculto animar">Celebremos juntos esta magia </h2>
+        <div class="divisor oculto animar retraso-1"></div>
+	 <p style="font-size: 1.25em; color: #3D3D3D;" class="oculto animar retraso-3">Hay momentos que soñamos durante mucho tiempo, pero solo cobran verdadera magia cuando los compartimos con las personas que más queremos. ¡Tu presencia es el mejor regalo en mis XV años!</p>
+                <br>
+        <img src="https://cdn-icons-png.flaticon.com/128/8177/8177237.png" style="width: 60px ;margin-bottom: 10px;" alt="Corona" class="oculto animar retraso-2">
+	<section class="bloque-seccion">
+        <h2 class= "oculto animar">Con la bendición de mis padres y padrinos</h2>
+        <div class="divisor"></div>
+        <div class="familia-grid">
+            <div class="familiar">
+                <img src="Padres.png" alt="Papá y Mamá">
+                <p>Mis Padres</p>
+                <span>Mónica de Jesús & </span> 
+<br>
+ 		<span>César Cuate</span> <img src="https://cdn-icons-png.flaticon.com/128/2811/2811468.png" style="width:12px; height:12px;" alt="Corona">          
+ </div>
+            <div class="familiar">
+                <img src="Padrinos.jpeg" alt="Padrinos">
+                <p>Mis Padrinos</p>
+                <span>Irma Vargas & <br>Julio de Jesús</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="bloque-seccion" style="background-color: #fff;">
+        <h2 class= "oculto animar">¿Dónde celebraremos?</h2>
+        <div class="divisor"></div>
+        <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center;">
+            
+            <div style="max-width:320px; padding:20px; border:1px solid #eee; border-radius:15px;">
+                <h3 class= "oculto animar retraso-2">Misa</h3>
+                <p>Parroquia Santa Martha Acatitla - 15:00 hrs</p>
+		<h5>Everardo González, Santa Martha Acatitla, Iztapalapa, 09510 Ciudad de México, CDMX</h5>
+                <div class="carrusel-contenedor">
+                    <img src="Iglesia1.jpg" class="carrusel-img" alt="Iglesia">
+                    <img src="Iglesia2.png" class="carrusel-img" alt="Iglesia Mapa">
+                </div>
+                <a href="https://maps.app.goo.gl/k5ks7d6sdhWxfYHQA" target="_blank" class="btn" style="background:var(--color-principal); color:white;">Ver Mapa</a>
+            </div>
+
+            <div style="max-width:320px; padding:20px; border:1px solid #eee; border-radius:15px;">
+                <h3 class= "oculto animar retraso-2">Salón</h3>
+                <p>Salón de Fiestas "Crystal Paradise" - 19:30 hrs</p>
+		<h5>Ermita Iztapalapa 2560, Jacarandas, Iztapalapa, 09280 Ciudad de México, CDMX</h5>
+                <div class="carrusel-contenedor">
+                    <img src="Salon1.jpeg" class="carrusel-img" alt="Salón">
+                    <img src="Salon2.png" class="carrusel-img" alt="Salón Mapa">
+                </div>
+                <a href="https://maps.app.goo.gl/eKtQqDNzDkxzyFAA9" target="_blank" class="btn" style="background:var(--color-principal); color:white;">Ver Mapa</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="bloque-seccion"> 
+        <h2 class="oculto animar">Código de Vestimenta</h2>
+        <div class="divisor oculto animar retraso-1"></div>
+        <img src="https://cdn-icons-png.flaticon.com/512/1785/1785255.png" style="width: 60px; margin-bottom: 10px;" alt="Traje" class="oculto animar retraso-2">
+        <h3 class="oculto animar retraso-2">Formal / Etiqueta</h3>
+        <p class="oculto animar retraso-3">Por favor, evita vestir de color <strong>ROJO. </strong></p>
+        
+        <br><br>
+        <h2 class="oculto animar">Información Importante</h2>
+        <div class="divisor oculto animar retraso-1"></div>
+        <ul class="oculto animar retraso-2" style="list-style: none; padding: 0; text-align: center;">
+            <li>💌 Junto a la invitación recibirás una imagen con tu número de boletos asignados.</li>
+	<br>
+            <li>🚗 El salón cuenta con estacionamiento con espacio limitado.</li>
+        <br>    
+	<li>🛗 Contamos con ascensor para personas con movilidad reducida.</li>
+        </ul>
+    </section>
+	
+    <section class="bloque-seccion oculto animar" style="background-color: #FFF;">
+        <div class="regalos-box">
+            <h2>Mesa de Regalos</h2>
+            <p>Si deseas darme un detalle, puedes buscar algo especial en mi lista:</p>
+            <a href="https://www.amazon.com.mx/registries/gl/guest-view/2P045WE8M6455?ref_=cm_sw_r_apann_ggr-subnav-share_J70P070JBS41KD5PWNE4&language=en-US" target="_blank" class="btn btn-amazon">Ver Wishlist en Amazon 🎁</a>
+        </div>
+
+        <div class="regalos-box">
+            <h2>Lluvia de Sobres</h2>
+            <p>Para mí, lo más importante es compartir este gran día contigo. Si gustas obsequiarme algo, contaremos con la tradición de 'Lluvia de Sobres'. Habrá un buzón en la recepción donde podrás dejar tu aportación en efectivo. ¡Muchas gracias por tu cariño!</p>
+         
+            <img src="https://cdn-icons-png.flaticon.com/128/1011/1011633.png" style="width: 80px;" alt="Sobre">
+        </div>
+    </section>
+
+    <section class="bloque-seccion oculto animar">
+        <h2>Buzón de Deseos</h2>
+        <p>Déjame un mensajito bonito que podré leer el día de mi fiesta.</p>
+        <div class="divisor"></div>
+        <textarea id="texto-deseo" rows="4" placeholder="Escribe tus felicitaciones aquí..."></textarea><br>
+        <button onclick="enviarDeseoWhatsApp()" class="btn" style="background: var(--color-principal); color: white;">Enviar mi deseo ✨</button>
+    </section>
+
+    <section class="bloque-seccion oculto animar" style="background-color: var(--color-acento); padding-bottom: 120px;">
+        <h2 style="color:white;">Confirmación</h2>
+        <p style="color:white;">¿Me acompañas? <br><br>	Por favor confirma con NOMBRE COMPLETO y NÚMERO DE ASISTENTES ASIGNADOS antes del 01/JUN/2026 .</p>
+        <a href="https://wa.me/5561675483?text=¡Hola!%20Confirmo%20mi%20asistencia%20a%20los%20XV%20años." target="_blank" class="btn" style="background:#25D366; color:white;">Confirmar vía WhatsApp</a>
+    </section>
+
+    <script>
+      // --- 1. ABRIR INVITACIÓN MODIFICADA (Efecto Caja de Regalo) ---
+        function abrirInvitacion() {
+            window.scrollTo(0, 0);
+            document.body.classList.remove('bloquear-scroll');
+
+            var coverContenido = document.getElementById('apertura-contenido');
+            var musica = document.getElementById("musica-fondo");
+
+            // FADE OUT CONTENIDO CENTRAL
+            coverContenido.style.opacity = "0";
+            coverContenido.style.pointerEvents = "none";
+
+            // ANIMACIÓN CUADRANTES
+            document.querySelector('.cuadrante.tl').style.transform = "translate(-100%, -100%)";
+            document.querySelector('.cuadrante.tr').style.transform = "translate(100%, -100%)";
+            document.querySelector('.cuadrante.bl').style.transform = "translate(-100%, 100%)";
+            document.querySelector('.cuadrante.br').style.transform = "translate(100%, 100%)";
+
+            // ANIMACIÓN LISTONES (Matemática corregida para que no se enchuequen)
+            document.querySelector('.liston.v-top').style.transform = "translate(-50%, -100%)";
+            document.querySelector('.liston.v-bottom').style.transform = "translate(-50%, 100%)";
+            document.querySelector('.liston.h-left').style.transform = "translate(-100%, -50%)";
+            document.querySelector('.liston.h-right').style.transform = "translate(100%, -50%)";
+
+            // Reproducir música
+            musica.play();
+            sonar = true;
+            document.getElementById("btn-play").innerHTML = "⏸️";
+
+            // Borramos la tapa entera después de 2 segundos
+            setTimeout(() => {
+                document.getElementById('pantalla-apertura').style.display = "none";
+            }, 2000);
+        }
+
+        // --- 2. ANIMACIONES AL HACER SCROLL (Fade In) ---
+        const observador = new IntersectionObserver((entradas) => {
+            entradas.forEach((entrada) => {
+                if(entrada.isIntersecting){
+                    entrada.target.classList.add('visible');
+                }
+            });
+        });
+        const elementosAnimar = document.querySelectorAll('.animar');
+        elementosAnimar.forEach((el) => observador.observe(el));
+
+        // --- 3. ENVIAR DESEO POR WHATSAPP ---
+        function enviarDeseoWhatsApp() {
+            var texto = document.getElementById("texto-deseo").value;
+            if(texto.trim() === "") {
+                alert("¡Por favor escribe un mensajito antes de enviar!");
+                return;
+            }
+            // Codifica el texto para que pueda viajar por un Link
+            var textoCodificado = encodeURIComponent("¡Un deseo para tus XV! ✨\n" + texto);
+            // Redirige al WhatsApp (Asegúrate de poner tu número)
+            window.open("https://wa.me/5560825570?text=" + textoCodificado, "_blank");
+        }
+
+        // --- 4. LÓGICA DE LA CUENTA REGRESIVA ---
+        const fechaEvento = new Date("June 20, 2026 15:00:00").getTime();
+        const x = setInterval(function() {
+            const ahora = new Date().getTime();
+            const distancia = fechaEvento - ahora;
+            document.getElementById("dias").innerHTML = Math.floor(distancia / (1000 * 60 * 60 * 24));
+            document.getElementById("horas").innerHTML = Math.floor((distancia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            document.getElementById("minutos").innerHTML = Math.floor((distancia % (1000 * 60 * 60)) / (1000 * 60));
+            document.getElementById("segundos").innerHTML = Math.floor((distancia % (1000 * 60)) / 1000);
+            if (distancia < 0) { clearInterval(x); document.getElementById("cuenta-regresiva").innerHTML = "¡ES HOY!"; }
+        }, 1000);
+
+        // --- 5. LÓGICA DE MÚSICA Y PÉTALOS ---
+        var musica = document.getElementById("musica-fondo");
+        var btnPlay = document.getElementById("btn-play");
+        var sonar = false;
+        function togglePlay() {
+            if (sonar) { musica.pause(); btnPlay.innerHTML = "🎵"; } 
+            else { musica.play(); btnPlay.innerHTML = "⏸️"; }
+            sonar = !sonar;
+        }
+
+        function crearPetalo() {
+            const petalo = document.createElement('div');
+            petalo.classList.add('petalo');
+            petalo.style.left = Math.random() * 100 + 'vw';
+            const tamano = Math.random() * 15 + 10; 
+            petalo.style.width = tamano + 'px'; petalo.style.height = tamano + 'px';
+            const duracion = Math.random() * 4 + 5; 
+            petalo.style.animationDuration = duracion + 's';
+            document.body.appendChild(petalo);
+            setTimeout(() => { petalo.remove(); }, duracion * 1000);
+        }
+        setInterval(crearPetalo, 400);
+	// --- 6. LÓGICA DE LOS BOTONES DE NAVEGACIÓN ---
+        function irArriba() {
+            // Te lleva suavemente hasta el inicio de la página
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function irSiguiente() {
+            // Selecciona la portada (header) y todas las secciones
+            const secciones = document.querySelectorAll('header, section');
+            
+            for (let i = 0; i < secciones.length; i++) {
+                // Calcula dónde está cada sección respecto a lo que estás viendo
+                const distanciaDesdeArriba = secciones[i].getBoundingClientRect().top;
+                
+                // Si la sección está por debajo de tu vista (con un margen de 50px)
+                if (distanciaDesdeArriba > 50) {
+                    // Desliza suavemente hacia esa sección y detiene el ciclo
+                    secciones[i].scrollIntoView({ behavior: 'smooth' });
+                    break;
+                }
+            }
+        }
+  // --- 7. DETENER MÚSICA AL SALIR O MINIMIZAR ---
+        document.addEventListener("visibilitychange", function() {
+            // Si la página se oculta (cambio de pestaña, se minimiza el navegador o se bloquea el celular)
+            if (document.hidden) {
+                musica.pause();
+                btnPlay.innerHTML = "🎵"; // Regresa el ícono a Play
+                sonar = false; // Actualiza el estado de la música
+            }
+        });
+
+    </script>
+
+</body>
+</html>
